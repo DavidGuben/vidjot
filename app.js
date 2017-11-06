@@ -57,10 +57,10 @@ app.post('/ideas', (req, res) => {
   let errors = [];
 
   if(!req.body.title){ // If title is empty error
-    errors.push({text: 'Please add a title'});
+    errors.push({ text: 'Please add a title' });
   }
   if(!req.body.details){ // If details are empty error
-    errors.push({text: 'Please add details'});
+    errors.push({ text: 'Please add details' });
   }
   // If errors array is greater than 0
   if(errors.length > 0) {
