@@ -1,11 +1,15 @@
-const express  = require('express');
-const exphbs   = require('express-handlebars');
+// Declare dependencies
+const express    = require('express');
+const mongoose   = require('mongoose');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const exphbs     = require('express-handlebars');
 
+// Map express function to app variable
 const app = express();
-// Map global promise - get rid of warning
+
+// Map global promise - gets rid of warning
 mongoose.Promise = global.Promise;
+
 // Connect to mongoose (remote or local)
 mongoose.connect('mongodb://localhost/vidjot-dev', {
   useMongoClient: true
@@ -17,15 +21,17 @@ mongoose.connect('mongodb://localhost/vidjot-dev', {
 // Load Idea model
 require('./models/Idea');
 const Idea = mongoose.model('ideas');
+
 // Handlebars middleware
 app.engine('handlebars', exphbs({
   defaultLayout: 'main'
 }));
 app.set('view engine', 'handlebars');
 
-//Body parser middleware
+// Body parser middleware
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+
 // Index route
 app.get('/', (req, res) => {
   const title = 'Welcome';
@@ -40,35 +46,49 @@ app.get('/about', (req, res) => {
   res.render('about');
 });
 
-//Add Idea Form
+// Add Idea Form
 app.get('/ideas/add', (req, res) => {
   res.render('ideas/add');
 });
+
 // Process Form
 app.post('/ideas', (req, res) => {
+  // Create a variable with an empty array to store errors
   let errors = [];
 
-  if(!req.body.title){
+  if(!req.body.title){ // If title is empty error
     errors.push({text: 'Please add a title'});
   }
-  if(!req.body.details){
-    errors.push({text: 'Please add a details'});
+  if(!req.body.details){ // If details are empty error
+    errors.push({text: 'Please add details'});
   }
-
+  // If errors array is greater than 0
   if(errors.length > 0) {
     res.render('ideas/add', {
+      // Empty fields and show errors
       errors: errors,
       title: req.body.title,
       details: req.body.details
     })
   } else {
-    res.send('passed');
+    // Attach input contents to the newUser object
+    const newUser = {
+      title: req.body.title,
+      details: req.body.details
+    }
+    // Push newUser object to database
+    new Idea(newUser)  // Idea variable comes from mongoose model
+    .save()            // save data to mongodb
+    .then(idea => {    // redirect user to /ideas route (list of ideas)
+      res.redirect('/ideas')
+    })
   }
 });
-// Port server runs on
+
+// Port variable
 const port = 5000;
 
-// Listen for server on specified port
+// Listen for server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
