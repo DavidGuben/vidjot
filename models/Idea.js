@@ -11,7 +11,7 @@ const IdeaSchema = new Schema({
     type: String,
     required: true
   },
-  date:{
+  date: {
     type: Date,
     default: Date.now
   }
